@@ -7,36 +7,41 @@ terraform {
       version = "=2.46.0"
     }
   }
+  backend "azurerm" {
+    resource_group_name   = "terraform-test-rg"
+    storage_account_name  = "cchiriac518"
+    container_name        = "tstate"
+    key                   = "terraform.tfstate"
+  }
 }
 
-# Configure the Microsoft Azure Provider
 provider "azurerm" {
   features {}
 }
 
 # Create a resource group
 resource "azurerm_resource_group" "example" {
-  name     = "test-rg"
+  name     = "terraform-test-rg"
   location = "West Europe"
 }
 
 resource "azurerm_virtual_network" "example" {
-  name                = "virtnetname"
+  name                = "terraform_vnet"
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
 }
 
 resource "azurerm_subnet" "example" {
-  name                 = "subnetname"
+  name                 = "terraform_sub_net"
   resource_group_name  = azurerm_resource_group.example.name
   virtual_network_name = azurerm_virtual_network.example.name
   address_prefixes     = ["10.0.2.0/24"]
 }
-}
+
 
 resource "azurerm_storage_account" "example" {
-  name                     = "storageaccountname"
+  name                     = "cchiriac518"
   resource_group_name      = azurerm_resource_group.example.name
   location                 = azurerm_resource_group.example.location
   account_tier             = "Standard"
@@ -49,6 +54,10 @@ resource "azurerm_storage_account" "example" {
 
 
 data "azurerm_subscription" "current" {
+}
+
+output "current_subscription_display_name" {
+  value = data.azurerm_subscription.current.display_name
 }
 
 resource "azurerm_management_group" "example_parent" {
@@ -67,4 +76,5 @@ resource "azurerm_management_group" "example_child" {
     data.azurerm_subscription.current.subscription_id,
   ]
   # other subscription IDs can go here
-}
+} 
+
